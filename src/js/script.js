@@ -1,23 +1,23 @@
-/* global Handlebars, utils, dataSource */ // eslint-disable-line no-unused-vars
+/* global Handlebars, utils, dataSource */
+/* eslint-disable no-unused-vars */
 {
-  'use strict'
-  // tworze odniesienie do html
+  'use strict';
   const select = {
     templateOf: {
       books: '#template-book',
+
     },
     containerOf: {
       booksList: '.books-list',
       bookImage: 'book__image',
       filters: '.filters',
     },
-  }
-  // tworze stala templates zawierajaca szablony dla poszczegolnych elementow html
+  };
+
   const templates = {
     templateBook: Handlebars.compile(document.querySelector(select.templateOf.books).innerHTML)
-  }
+  };
 
-  // tworzę klasę dla listy ksiazek
   class BookList {
     constructor(){
       const thisBookList = this;
@@ -30,7 +30,7 @@
 
     initData(){
       const thisBookList = this;
-      thisBookList.data = dataSource.books
+      thisBookList.data = dataSource.books;
     }
 
     getElements(){
@@ -47,15 +47,18 @@
 
     render(){
       const thisBookList = this;
-      //petla dla wszystkich książek z listy
       for (let book of dataSource.books){
-        // generuje html na podstawie templates przekazując mu dane pojedynczej book z datasource.books
+        const ratingBgc = thisBookList.determineRatingBgc(book.rating);
+        book.ratingBgc = ratingBgc;
+        console.log(book.ratingBgc)
+
+        const ratingWidth = book.rating * 10;
+        book.ratingWidth = ratingWidth;
+        console.log(book.ratingWidth)
+
         const generatedHTLM = templates.templateBook(book);
-        // tworzę element dom z uwzględnieniem wygenerowanego kodu html
         const generatedDOM = utils.createDOMFromHTML(generatedHTLM);
-        // znajduję miejscę do umieszczenia elementu dom
         const bookListArea = document.querySelector(select.containerOf.booksList);
-        // umieszczam element dom - append child
         bookListArea.appendChild(generatedDOM);
       }
     }
@@ -65,33 +68,33 @@
 
       thisBookList.dom.books.addEventListener('dblclick', function(event){
         event.preventDefault();
-        console.log('like')
-        const imageParent = event.target.offsetParent
-        const imageId = imageParent.getAttribute('data-id')
+        console.log('like');
+        const imageParent = event.target.offsetParent;
+        const imageId = imageParent.getAttribute('data-id');
         if (imageParent.classList.contains(select.containerOf.bookImage)){
           if (! imageParent.classList.contains('favorite')){
-            imageParent.classList.add('favorite')
-            thisBookList.favouriteBooks.push(imageId)
-            console.log(thisBookList.favouriteBooks)
+            imageParent.classList.add('favorite');
+            thisBookList.favouriteBooks.push(imageId);
+            console.log(thisBookList.favouriteBooks);
           } else {
             imageParent.classList.remove('favorite');
-            const indexToRemove = thisBookList.favouriteBooks.indexOf(imageId)
+            const indexToRemove = thisBookList.favouriteBooks.indexOf(imageId);
             thisBookList.favouriteBooks.splice(indexToRemove, 1);
-            console.log(thisBookList.favouriteBooks)
+            console.log(thisBookList.favouriteBooks);
           }
         }
       });
       thisBookList.dom.filters.addEventListener('click', function(event){
-        const clickedCheckbox = event.target
+        const clickedCheckbox = event.target;
         if (
           clickedCheckbox.type === 'checkbox' &&
           clickedCheckbox.name === 'filter' &&
           clickedCheckbox.tagName === 'INPUT' &&
           clickedCheckbox.checked === true
         ){
-          console.log('check')
-          console.log('value:', clickedCheckbox.value)
-          console.log('filters:', thisBookList.filters)
+          console.log('check');
+          console.log('value:', clickedCheckbox.value);
+          console.log('filters:', thisBookList.filters);
           thisBookList.filters.push(clickedCheckbox.value);
         } else if (
           clickedCheckbox.type === 'checkbox' &&
@@ -101,29 +104,43 @@
         ){
           const valueIndexToRemove = thisBookList.filters.indexOf(clickedCheckbox.value);
           thisBookList.filters.splice(valueIndexToRemove, 1);
-          console.log(thisBookList.filters)
+          console.log(thisBookList.filters);
         }
-        thisBookList.filter()
-      })
-      }
-      filter(){
-        const thisBookList = this;
-        for (let book of dataSource.books) {
-          let shouldBeHidden = false;
-          for (const filter of thisBookList.filters) {
-            if(!book.details[filter]) {
-              shouldBeHidden = true;
-              break;
-            }
+        thisBookList.filter();
+      });
+    }
+
+    filter(){
+      const thisBookList = this;
+      for (let book of dataSource.books) {
+        let shouldBeHidden = false;
+        for (const filter of thisBookList.filters) {
+          if(!book.details[filter]) {
+            shouldBeHidden = true;
+            break;
           }
-          const bookImageHide = document.querySelector('.book__image[data-id="'+ book.id + '"]');
-          if(shouldBeHidden = true) {
-            bookImageHide.classList.add('hidden');
-          } else {
-            bookImageHide.classList.remove('hidden');
-          }
+        }
+        const bookImageHide = document.querySelector('.book__image[data-id="'+ book.id + '"]');
+        if(shouldBeHidden) {
+          bookImageHide.classList.add('hidden');
+        } else {
+          bookImageHide.classList.remove('hidden');
         }
       }
     }
-  new BookList;
+
+    determineRatingBgc(rating){
+      if (rating < 6) {
+        return 'background: linear-gradient(to bottom,  #fefcea 0%, #f1da36 100%)';
+      } else if (rating > 6 && rating <= 8){
+        return 'background: linear-gradient(to bottom, #b4df5b 0%,#b4df5b 100%)';
+      } else if (rating > 8 && rating <= 9){
+        return 'background: linear-gradient(to bottom, #299a0b 0%, #299a0b 100%)';
+      } else if (rating > 9){
+        return 'background: linear-gradient(to bottom, #ff0084 0%,#ff0084 100%)';
+      }
+    }
+  }
+
+  const app = new BookList;
 }
