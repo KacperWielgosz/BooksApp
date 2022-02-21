@@ -50,11 +50,9 @@
       for (let book of dataSource.books){
         const ratingBgc = thisBookList.determineRatingBgc(book.rating);
         book.ratingBgc = ratingBgc;
-        console.log(book.ratingBgc)
 
         const ratingWidth = book.rating * 10;
         book.ratingWidth = ratingWidth;
-        console.log(book.ratingWidth)
 
         const generatedHTLM = templates.templateBook(book);
         const generatedDOM = utils.createDOMFromHTML(generatedHTLM);
@@ -65,23 +63,23 @@
 
     initActions() {
       const thisBookList = this;
-
+      thisBookList.dom.books.addEventListener('click', function(event){
+        event.preventDefault();
+      });
       thisBookList.dom.books.addEventListener('dblclick', function(event){
         event.preventDefault();
-        console.log('like');
         const imageParent = event.target.offsetParent;
         const imageId = imageParent.getAttribute('data-id');
-        if (imageParent.classList.contains(select.containerOf.bookImage)){
-          if (! imageParent.classList.contains('favorite')){
-            imageParent.classList.add('favorite');
-            thisBookList.favouriteBooks.push(imageId);
-            console.log(thisBookList.favouriteBooks);
-          } else {
-            imageParent.classList.remove('favorite');
-            const indexToRemove = thisBookList.favouriteBooks.indexOf(imageId);
-            thisBookList.favouriteBooks.splice(indexToRemove, 1);
-            console.log(thisBookList.favouriteBooks);
-          }
+        if (
+          ! imageParent.classList.contains('favorite') &&
+          imageParent.classList.contains(select.containerOf.bookImage)
+        ){
+          imageParent.classList.add('favorite');
+          thisBookList.favouriteBooks.push(imageId);
+        } else if (imageParent.classList.contains(select.containerOf.bookImage)){
+          imageParent.classList.remove('favorite');
+          const indexToRemove = thisBookList.favouriteBooks.indexOf(imageId);
+          thisBookList.favouriteBooks.splice(indexToRemove, 1);
         }
       });
       thisBookList.dom.filters.addEventListener('click', function(event){
@@ -92,9 +90,6 @@
           clickedCheckbox.tagName === 'INPUT' &&
           clickedCheckbox.checked === true
         ){
-          console.log('check');
-          console.log('value:', clickedCheckbox.value);
-          console.log('filters:', thisBookList.filters);
           thisBookList.filters.push(clickedCheckbox.value);
         } else if (
           clickedCheckbox.type === 'checkbox' &&
@@ -104,7 +99,6 @@
         ){
           const valueIndexToRemove = thisBookList.filters.indexOf(clickedCheckbox.value);
           thisBookList.filters.splice(valueIndexToRemove, 1);
-          console.log(thisBookList.filters);
         }
         thisBookList.filter();
       });
